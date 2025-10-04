@@ -1,6 +1,6 @@
 name: aadhar_auth_service
 description: "Aadhaar Auth Service is a robust and secure SDK/API designed to seamlessly integrate Aadhaar-based authentication and e-KYC into your application. It provides all the necessary tools for various authentication methods (OTP, Biometric) in compliance with UIDAI guidelines, ensuring quick, secure, and reliable identity verification for your users."
-version: 0.0.1
+version: 0.0.2
 homepage: "https://github.com/Rajkumar07793/aadhar_auth_service"
 documentation: "https://github.com/Rajkumar07793/aadhar_auth_service/blob/main/README.md"
 repository: "https://github.com/Rajkumar07793/aadhar_auth_service.git"
