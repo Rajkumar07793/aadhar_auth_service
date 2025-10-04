@@ -3,6 +3,7 @@
 /// This class provides methods to request OTP and verify OTP for Aadhaar authentication
 /// using UIDAI's authentication API. It includes simplified XML builders, response parsers,
 /// and placeholders for cryptographic operations.
+library;
 import 'dart:convert';
 import 'dart:math';
 
