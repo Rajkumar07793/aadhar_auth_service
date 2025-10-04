@@ -1,22 +1,32 @@
-// UIDAI Aadhaar OTP Service Implementation
+/// UIDAI Aadhaar OTP Service Implementation
+///
+/// This class provides methods to request OTP and verify OTP for Aadhaar authentication
+/// using UIDAI's authentication API. It includes simplified XML builders, response parsers,
+/// and placeholders for cryptographic operations.
 import 'dart:convert';
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
+/// A service class for handling Aadhaar OTP request and verification.
 class AadhaarAuthService {
-  // Production URL: https://auth.uidai.gov.in (requires private network)
-  // Test URL: https://auth.uidai.gov.in (for public testing use "public" as ac)
-  // static const String baseUrl = 'https://auth.uidai.gov.in';
-  // static const String baseUrl = 'http://auth.uidai.gov.in';
-  // static const String baseUrl = 'http://developer.uidai.gov.in/kyc';
+  /// Base URL of UIDAI authentication server.
+  /// Production requires private network access, while developer endpoints can be used for testing.
   static const String baseUrl = 'https://developer.uidai.gov.in/uidotp';
-  // static const String baseUrl = 'http://developer.uidai.gov.in/bfd';
-  // static const String baseUrl = 'http://stage1.uidai.gov.in';
+
+  /// API version as per UIDAI specification.
   static const String version = '2.5';
 
-  // OTP Request API
+  /// Requests an OTP from UIDAI servers.
+  ///
+  /// [aadhaarNumber] Aadhaar number of the user.
+  /// [auaCode] Authentication User Agency code.
+  /// [subAuaCode] Sub-AUA code.
+  /// [licenseKey] License key issued by UIDAI.
+  /// [asaLicenseKey] ASA license key.
+  ///
+  /// Returns a [Map] with success status, message, and transactionId.
   static Future<Map<String, dynamic>> requestOtp({
     required String aadhaarNumber,
     required String auaCode,
@@ -38,12 +48,11 @@ class AadhaarAuthService {
         licenseKey: licenseKey,
       );
 
-      // Calculate URL
+      // Calculate URL for OTP API call
       String uid0 = aadhaarNumber.substring(0, 1);
       String uid1 = aadhaarNumber.substring(1, 2);
       String url = '$baseUrl/$version/$auaCode/$uid0/$uid1/$asaLicenseKey';
 
-      print(url);
       // Make HTTP request
       final response = await http.post(
         Uri.parse(url),
@@ -69,7 +78,14 @@ class AadhaarAuthService {
     }
   }
 
-  // Authentication API for OTP verification
+  /// Verifies the OTP using UIDAI authentication API.
+  ///
+  /// [aadhaarNumber] Aadhaar number of the user.
+  /// [otp] One-time password received on Aadhaar-linked mobile.
+  /// [transactionId] Transaction ID generated during OTP request.
+  /// [auaCode], [subAuaCode], [licenseKey], [asaLicenseKey] are UIDAI credentials.
+  ///
+  /// Returns a [Map] containing success status, message, and optional uidToken.
   static Future<Map<String, dynamic>> verifyOtp({
     required String aadhaarNumber,
     required String otp,
@@ -104,7 +120,7 @@ class AadhaarAuthService {
         hmacValue: hmacValue,
       );
 
-      // Calculate URL
+      // Calculate URL for Auth API call
       String uid0 = aadhaarNumber.substring(0, 1);
       String uid1 = aadhaarNumber.substring(1, 2);
       String url = '$baseUrl/$version/$auaCode/$uid0/$uid1/$asaLicenseKey';
@@ -137,6 +153,7 @@ class AadhaarAuthService {
     }
   }
 
+  /// Builds OTP Request XML as per UIDAI spec.
   static String _buildOtpRequestXml({
     required String aadhaarNumber,
     required String transactionId,
@@ -145,8 +162,6 @@ class AadhaarAuthService {
     required String subAuaCode,
     required String licenseKey,
   }) {
-    // Note: This is a simplified OTP request.
-    // In production, you need to implement proper XML signing and encryption
     return '''<?xml version="1.0" encoding="UTF-8"?>
 <Otp uid="$aadhaarNumber" tid="" ac="$auaCode" sa="$subAuaCode" ver="2.5" txn="$transactionId" lk="$licenseKey" ts="$timestamp">
   <Opts ch="01"/>
@@ -156,6 +171,7 @@ class AadhaarAuthService {
 </Otp>''';
   }
 
+  /// Builds Authentication XML as per UIDAI spec.
   static String _buildAuthXml({
     required String aadhaarNumber,
     required String transactionId,
@@ -179,8 +195,8 @@ class AadhaarAuthService {
 </Auth>''';
   }
 
+  /// Parses the OTP response from UIDAI server.
   static Map<String, dynamic> _parseOtpResponse(String xmlResponse) {
-    // Simplified XML parsing - in production use proper XML parser
     if (xmlResponse.contains('ret="y"') || xmlResponse.contains("ret='y'")) {
       return {'success': true, 'message': 'OTP sent successfully'};
     } else if (xmlResponse.contains('err=')) {
@@ -192,13 +208,10 @@ class AadhaarAuthService {
     }
   }
 
+  /// Parses the Auth response from UIDAI server.
   static Map<String, dynamic> _parseAuthResponse(String xmlResponse) {
-    // Simplified XML parsing - in production use proper XML parser
     if (xmlResponse.contains('ret="y"') || xmlResponse.contains("ret='y'")) {
-      String? uidToken = _extractFromInfo(
-        xmlResponse,
-        0,
-      ); // UID token is first in info
+      String? uidToken = _extractFromInfo(xmlResponse, 0);
       return {
         'success': true,
         'message': 'Authentication successful',
@@ -213,12 +226,14 @@ class AadhaarAuthService {
     }
   }
 
+  /// Extracts an attribute value from XML string.
   static String _extractAttribute(String xml, String attribute) {
     RegExp regex = RegExp('$attribute="([^"]*)"');
     Match? match = regex.firstMatch(xml);
     return match?.group(1) ?? '';
   }
 
+  /// Extracts a value from comma-separated `info` attribute.
   static String? _extractFromInfo(String xml, int index) {
     String? info = _extractAttribute(xml, 'info');
     if (info.isNotEmpty) {
@@ -230,6 +245,7 @@ class AadhaarAuthService {
     return null;
   }
 
+  /// Maps UIDAI error codes to human-readable error messages.
   static String _getErrorMessage(String errorCode) {
     Map<String, String> errorMessages = {
       // Demographic / biometric mismatch
@@ -375,66 +391,55 @@ class AadhaarAuthService {
       '997': 'Aadhaar suspended',
       '998': 'Invalid Aadhaar number',
       '999': 'Unknown error',
+      // (Truncated for brevity: include all error codes in full production code)
     };
 
     return errorMessages[errorCode] ?? 'Unknown error occurred';
   }
 
+  /// Generates a unique transaction ID using timestamp and random number.
   static String _generateTransactionId() {
     String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
     String random = Random().nextInt(999999).toString().padLeft(6, '0');
     return 'TXN$timestamp$random';
   }
 
+  /// Returns the current timestamp in ISO8601 format required by UIDAI.
   static String _getCurrentTimestamp() {
     DateTime now = DateTime.now();
     return "${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}T${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
   }
 
+  /// Generates a 256-bit session key for encryption.
   static List<int> _generateSessionKey() {
-    // Generate 32-byte (256-bit) AES key
     Random random = Random.secure();
     return List<int>.generate(32, (i) => random.nextInt(256));
   }
 
+  /// Encrypts the PID block (placeholder implementation).
   static Future<String> _encryptPidBlock(
     String otp,
     String timestamp,
     List<int> sessionKey,
   ) async {
-    // Simplified - In production, implement proper AES/GCM/NoPadding encryption
-    // This is just a placeholder for the actual encryption logic
     String pidXml =
         '''<Pid ts="$timestamp" ver="2.0">
   <Pv otp="$otp"/>
 </Pid>''';
-
-    // In production:
-    // 1. Use AES/GCM/NoPadding with session key
-    // 2. Use last 12 bytes of timestamp as IV
-    // 3. Use last 16 bytes of timestamp as AAD
-    // 4. Append authentication tag
-    // 5. Append timestamp
-    // 6. Base64 encode the result
-
     return base64Encode(utf8.encode(pidXml)); // Placeholder
   }
 
+  /// Encrypts the session key with UIDAI public key (placeholder).
   static Future<String> _encryptSessionKey(List<int> sessionKey) async {
-    // In production: Encrypt session key with UIDAI public key using RSA/ECB/PKCS1Padding
-    // This is a placeholder - you need UIDAI's actual public key
     return base64Encode(sessionKey); // Placeholder
   }
 
+  /// Calculates HMAC of PID block (placeholder implementation).
   static String _calculateHmac(
     String otp,
     String timestamp,
     List<int> sessionKey,
   ) {
-    // In production:
-    // 1. Calculate SHA-256 hash of PID XML/Protobuf
-    // 2. Encrypt with session key
-    // 3. Base64 encode
     String pidXml =
         '''<Pid ts="$timestamp" ver="2.0">
   <Pv otp="$otp"/>
