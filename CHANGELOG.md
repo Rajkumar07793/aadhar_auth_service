@@ -1,3 +1,7 @@
+## 0.0.5
+
+* Changelog updated
+
 ## 0.0.4
 
 * Pass static analysis dart format .
