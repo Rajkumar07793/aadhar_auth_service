@@ -51,12 +51,12 @@ class AadhaarVerificationState extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
-        transactionId,
-        uidToken,
-        errorMessage,
-        resendTimerSeconds,
-        canResendOtp,
-        verificationResult,
-      ];
+    status,
+    transactionId,
+    uidToken,
+    errorMessage,
+    resendTimerSeconds,
+    canResendOtp,
+    verificationResult,
+  ];
 }

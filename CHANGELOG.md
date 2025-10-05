@@ -1,5 +1,9 @@
 ## 0.0.3
 
+* Pass static analysis dart format .
+
+## 0.0.3
+
 * Added test documentation and test keys for aadhar
 
 ## 0.0.2

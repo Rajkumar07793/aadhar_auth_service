@@ -24,8 +24,13 @@ class RequestOtpEvent extends AadhaarVerificationEvent {
   });
 
   @override
-  List<Object> get props =>
-      [aadhaarNumber, auaCode, subAuaCode, licenseKey, asaLicenseKey];
+  List<Object> get props => [
+    aadhaarNumber,
+    auaCode,
+    subAuaCode,
+    licenseKey,
+    asaLicenseKey,
+  ];
 }
 
 class VerifyOtpEvent extends AadhaarVerificationEvent {
@@ -49,14 +54,14 @@ class VerifyOtpEvent extends AadhaarVerificationEvent {
 
   @override
   List<Object> get props => [
-        aadhaarNumber,
-        otp,
-        transactionId,
-        auaCode,
-        subAuaCode,
-        licenseKey,
-        asaLicenseKey
-      ];
+    aadhaarNumber,
+    otp,
+    transactionId,
+    auaCode,
+    subAuaCode,
+    licenseKey,
+    asaLicenseKey,
+  ];
 }
 
 class ResendOtpEvent extends AadhaarVerificationEvent {
@@ -75,8 +80,13 @@ class ResendOtpEvent extends AadhaarVerificationEvent {
   });
 
   @override
-  List<Object> get props =>
-      [aadhaarNumber, auaCode, subAuaCode, licenseKey, asaLicenseKey];
+  List<Object> get props => [
+    aadhaarNumber,
+    auaCode,
+    subAuaCode,
+    licenseKey,
+    asaLicenseKey,
+  ];
 }
 
 class ResetVerificationEvent extends AadhaarVerificationEvent {}
